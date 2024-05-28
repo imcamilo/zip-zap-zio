@@ -2,5 +2,5 @@ package com.github.imcamilo
 
 @main
 def main(): Unit = {
-  println("Hello world!")
+  println("zip zap ZIO!")
 }
