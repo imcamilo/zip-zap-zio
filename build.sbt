@@ -1,6 +1,6 @@
 ThisBuild / version := "0.1.0-SNAPSHOT"
 
-ThisBuild / scalaVersion := "3.1.3"
+ThisBuild / scalaVersion := "3.3.1"
 
 lazy val root = (project in file("."))
   .settings(
@@ -10,6 +10,7 @@ lazy val root = (project in file("."))
 
 lazy val zioVersion = "2.1.1"
 
+
 libraryDependencies ++= Seq(
   "dev.zio" %% "zio" % zioVersion,
   "dev.zio" %% "zio-test" % zioVersion,
@@ -18,4 +19,4 @@ libraryDependencies ++= Seq(
   "dev.zio" %% "zio-test-junit" % zioVersion
 )
 
-testFrameworks += new TestFramework("zio.test..sbt.ZTestFramework")
+testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
