@@ -2,6 +2,7 @@ package com.github.imcamilo
 package effects
 
 import scala.concurrent.Future
+import scala.io.StdIn
 
 /*
  * Functional Programming
@@ -76,12 +77,79 @@ object Effects {
    *
    * an Effect is
    * - Data type which:
-   * - Embodies a computational comcept (e.g. side effects, absence of a value)
+   * - Embodies a computational concept (e.g. side effects, absence of a value)
    * - is referentially transparent
    * Effect properties:
    * - It describes what kind of computation it will perform
    * - The type signature describes the value it will calculate
    * - It separates effect description from effect execution (when externally visible side effects are produced)
    * */
+
+}
+
+object EffectsExercises {
+
+  case class MyIO[A](unsafeRun: () => A) {
+    def map[B](f: A => B): MyIO[B] =
+      MyIO(() => f(unsafeRun()))
+    def flatMap[B](f: A => MyIO[B]): MyIO[B] =
+      MyIO(() => f(unsafeRun()).unsafeRun())
+  }
+
+  /* Create some IO which
+   * 1. measure the current time of the system
+   * 2. measure the duration of a computation
+   *  - use exercise one
+   *  - use map/flatMap combination of MyIO
+   * 3. read something from the console
+   * 4. print something to the console (e.g. "how old are u?"), then read, then print a welcome message
+   * */
+
+  // 1
+  val currentTime: MyIO[Long] = MyIO(() => System.currentTimeMillis())
+  // 2
+  def measure[A](computation: MyIO[A]): MyIO[(Long, A)] = for {
+    startTime <- currentTime
+    result <- computation
+    endTime <- currentTime
+  } yield (endTime - startTime, result)
+
+  def measure2[A](computation: MyIO[A]): MyIO[(Long, A)] = {
+
+    MyIO { () =>
+      val startTime = currentTime.unsafeRun()
+      val result = computation.unsafeRun()
+      val endTime = currentTime.unsafeRun()
+      (endTime - startTime, result)
+    }
+
+  }
+
+  def demoMeasure(): Unit = {
+    val computation = MyIO(() => {
+      println("A")
+      Thread.sleep(1000)
+      println("B")
+      30
+    })
+
+    println(measure(computation).unsafeRun())
+    println(measure2(computation).unsafeRun())
+  }
+  // 3
+  val readLine: MyIO[String] = MyIO(() => StdIn.readLine())
+
+  // 4
+  def putStrLn(line: String): MyIO[Unit] = MyIO(() => println(line))
+  val program = for {
+    _ <- putStrLn("how old are u?")
+    age <- readLine
+    _ <- putStrLn(s"uh $age!")
+  } yield ()
+
+  def main(args: Array[String]): Unit = {
+    // demoMeasure()
+    program.unsafeRun()
+  }
 
 }
